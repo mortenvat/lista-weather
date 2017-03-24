@@ -7,7 +7,7 @@ import os
 ##### Innstillinger ##### temp_calibrated = temp - ((cpu_temp - temp)/FACTOR)  - temp_calibrated = temp - ((cpu_temp - temp)/5.466)
 
 
-FILENAME = "test" #filnavn
+FILENAME = "test" ##########################FILNAVN#######################
 WRITE_FREQUENCY = 1 #hvor mye data den skal samle på før den legger det til i csv filen, høy verdi vil øke levetid på SD kort
 TEMP_H=True			#slå av rapportering av enkelte sensorer?
 TEMP_P=True
@@ -130,7 +130,7 @@ while True:
 			batch_data = []
 			
 	sense.set_rotation(180)        #sett orienteringen til raspberry LED
-	sense.show_message(displaytemp(), scroll_speed=0.10, text_colour=[0, 255, 0])
-	sense.show_message(displayhumidity(), scroll_speed=0.10, text_colour=[0, 0, 255])
+	sense.show_message(displaytemp(), scroll_speed=0.10, text_colour=[0, 122, 0])
+	sense.show_message(displayhumidity(), scroll_speed=0.10, text_colour=[0, 0, 122])
 	
 	
