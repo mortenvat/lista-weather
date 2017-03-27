@@ -8,12 +8,12 @@ import os
 
 
 FILENAME = "test" ##########################FILNAVN#######################
-WRITE_FREQUENCY = 1 #hvor mye data den skal samle på før den legger det til i csv filen, høy verdi vil øke levetid på SD kort
+WRITE_FREQUENCY = 5 #hvor mye data den skal samle på før den legger det til i csv filen, høy verdi vil øke levetid på SD kort
 TEMP_H=True			#slå av rapportering av enkelte sensorer?
 TEMP_P=True
 HUMIDITY=True
 PRESSURE=True
-DELAY=30 # hvor mange sekund det skal ta mellom hver loggføring
+DELAY=120 # hvor mange sekund det skal ta mellom hver loggføring
 
 ##### Funksjoner #####
 
@@ -40,8 +40,8 @@ def log_data():
 def displaytemp(): #vis temperatur i LED
 	cpu = float(getCPUtemperature())
 	temp_h = sense.get_temperature_from_humidity()
-	temp_h_c = temp_h - ((cpu) / 5.466) 
-	temp_h_cc = round(temp_h_c, 1)
+	temp_h_c = temp_h - ((cpu) / 5.466)  # formel for korreksjon av temperaturmåler 
+	temp_h_cc = round(temp_h_c, 1)  #formater utdata til ën desimal
 	return str(temp_h_cc)
 	
 	
@@ -51,8 +51,8 @@ def displayhumidity():  #vis fuktighetprosent i LED
 	return str(humidity)
 	
 	
-def getCPUtemperature(): #skaff CPU temperatur og formater utdata til rent desimaltall
-	res = os.popen('vcgencmd measure_temp').readline()
+def getCPUtemperature(): #skaff CPU temperatur
+	res = os.popen('vcgencmd measure_temp').readline() 
 	return(res.replace("temp=","").replace("'C\n",""))
 
 def get_sense_data(): # selve innskaffelsen av sensor data
@@ -61,33 +61,33 @@ def get_sense_data(): # selve innskaffelsen av sensor data
 	
 	def getCPUtemperature():
 		res = os.popen('vcgencmd measure_temp').readline()
-		return(res.replace("temp=","").replace("'C\n",""))
+		return(res.replace("temp=","").replace("'C\n","")) # gjør utdata til rent desimaltall istedet for tekst 
 
-	cpu = float(getCPUtemperature())
+	cpu = float(getCPUtemperature()) #gjør info til tall 
 	
 	if TEMP_H:		#temperatur fra sensor1
 		temp_h = sense.get_temperature_from_humidity()
-		temp_h_c = temp_h - ((cpu) / 5.466)
-		temp_h_cc = round(temp_h_c, 1)
+		temp_h_c = temp_h - ((cpu) / 5.466)# formel for korreksjon av temperaturmåler 
+		temp_h_cc = round(temp_h_c, 1) #formater utdata til ën desimal
 		sense_data.append(temp_h_cc)
 
 	if TEMP_P:		#temperatur fra sensor2
 		temp_f = sense.get_temperature_from_pressure()
-		temp_f_c = temp_f - ((cpu) / 5.466)
-		temp_f_c = round(temp_f_c, 1)
+		temp_f_c = temp_f - ((cpu) / 5.466)# formel for korreksjon av temperaturmåler 
+		temp_f_c = round(temp_f_c, 1) #formater utdata til rent desimaltall
 		sense_data.append(temp_f_c)
 
 	if HUMIDITY:	#fuktighetprosent
-		humidity = sense.get_humidity()
-		humidity = round(humidity, 1)
-		sense_data.append(humidity)
+		humidity = sense.get_humidity() # skaff info luftfuktighet
+		humidity = round(humidity, 1) #formater utdata til rent desimaltall
+		sense_data.append(humidity) 
 
 	if PRESSURE:	#lufttrykk i mBar
-		pressure = sense.get_pressure()
-		pressure = round(pressure, 1) 
+		pressure = sense.get_pressure() # skaff info lufttrykk
+		pressure = round(pressure, 1) #formater utdata til rent desimaltall
 		sense_data.append(pressure)
 
-	sense_data.append(datetime.now())
+	sense_data.append(datetime.now()) # legg til tidspunkt 
 
 
 
@@ -130,7 +130,7 @@ while True:
 			batch_data = []
 			
 	sense.set_rotation(180)        #sett orienteringen til raspberry LED
-	sense.show_message(displaytemp(), scroll_speed=0.10, text_colour=[0, 122, 0])
-	sense.show_message(displayhumidity(), scroll_speed=0.10, text_colour=[0, 0, 122])
+	sense.show_message(displaytemp(), scroll_speed=0.10, text_colour=[0, 122, 0]) #innstillinger for LED
+	sense.show_message(displayhumidity(), scroll_speed=0.10, text_colour=[0, 0, 122])#innstillinger for LED
 	
 	
