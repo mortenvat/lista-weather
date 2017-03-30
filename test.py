@@ -1,6 +1,8 @@
 import plotly.plotly as py
 from plotly.graph_objs import Scatter, Layout, Figure
 import time
+import pandas as pd
+import numpy as np
 
 
 username = 'mortenv'
@@ -9,22 +11,20 @@ stream_token = 'uan67ed6r7'
 
 py.sign_in(username, api_key)
 
-trace1 = Scatter(
-    x=[],
-    y=[],
-    stream=dict(
-        token=stream_token,
-        maxpoints=200
-    )
-)
+df = pd.read_csv('testklasserom.csv')
+df.head()
 
-layout = Layout(
-    title='Raspberry Pi Streaming Sensor Data'
-)
+trace1 = go.Scatter(
+                    x=df['tidspunkt'], y=df['temp1'], # Data
+                    mode='lines', name='temp1' # Additional options
+                   )
+trace2 = go.Scatter(x=df['tidspunkt'], y=df['temp2'], mode='lines', name='temp2' )
+trace3 = go.Scatter(x=df['tidspunkt'], y=df['fuktighet'], mode='lines', name='fuktighet')
 
-fig = Figure(data=[trace1], layout=layout)
+layout = go.Layout(title='testklasserom',
+                   plot_bgcolor='rgb(230, 230,230)')
 
-py.plot(fig, filename='Raspberry Pi Streaming Example Values')
+fig = go.Figure(data=[trace1, trace2, trace3], layout=layout)
 
 
 i = 0
