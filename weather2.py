@@ -3,18 +3,20 @@ from sense_hat import SenseHat
 from time import sleep
 from threading import Thread
 import os
+import plotly.plotly as py
+from plotly.graph_objs import *
+import time
+
 ##### Innstillinger ##### temp_calibrated = temp - ((cpu_temp - temp)/FACTOR)  - temp_calibrated = temp - ((cpu_temp - temp)/5.466)
 
 
-FILENAME = "testklasserom" ##########################FILNAVN#######################
+FILENAME = "test" ##########################FILNAVN#######################
 WRITE_FREQUENCY = 1 #hvor mye data den skal samle på før den legger det til i csv filen, høy verdi vil øke levetid på SD kort
-TEMP_H=True
-
-#slå av rapportering av enkelte sensorer?
+TEMP_H=True			#slå av rapportering av enkelte sensorer?
 TEMP_P=True
 HUMIDITY=True
-PRESSURE=False
-DELAY=1800 # hvor mange sekund det skal ta mellom hver loggføring
+PRESSURE=True
+DELAY=1 # hvor mange sekund det skal ta mellom hver loggføring
 
 ##### Funksjoner #####
 
@@ -25,7 +27,7 @@ def file_setup(filename):  # overskrift for kolonner i csv fil
 	if TEMP_P:
 		header.append("temp2")
 	if HUMIDITY:
-		header.append("fuktighet")
+		header.append("luftfuktighet")
 	if PRESSURE:
 		header.append("lufttrykk")
 	header.append("tidspunkt")
@@ -40,8 +42,8 @@ def log_data():
 
 def displaytemp(): #vis temperatur i LED
 	cpu = float(getCPUtemperature())
-	temp_h = sense.get_temperature_from_pressure()
-	temp_h_c = temp_h - 4 - ((cpu) / 5.466)  # formel for korreksjon av temperaturmåler 
+	temp_h = sense.get_temperature_from_humidity()
+	temp_h_c = temp_h - ((cpu) / 5.466)  # formel for korreksjon av temperaturmåler ##### 0.0071*temp_h*temp_h+0.86*temp_h-10.0 ##### temp - ((cputemp - temp) / 2)
 	temp_h_cc = round(temp_h_c, 1)  #formater utdata til ën desimal
 	return str(temp_h_cc)
 	
@@ -62,8 +64,8 @@ def getCPUtemperature(): #skaff CPU temperatur
 	res = os.popen('vcgencmd measure_temp').readline() 
 	return(res.replace("temp=","").replace("'C\n",""))
 
-def get_sense_data(): # selve innskaffelsen av sensor data
 	sense_data=[]
+def get_sense_data(): # selve innskaffelsen av sensor data
 
 	
 	def getCPUtemperature():
@@ -74,13 +76,13 @@ def get_sense_data(): # selve innskaffelsen av sensor data
 	
 	if TEMP_H:		#temperatur fra sensor1
 		temp_h = sense.get_temperature_from_humidity()
-		temp_h_c = temp_h - 4 - ((cpu) / 5.466)# formel for korreksjon av temperaturmåler 
+		temp_h_c = temp_h - ((cpu) / 5.466)# formel for korreksjon av temperaturmåler 
 		temp_h_cc = round(temp_h_c, 1) #formater utdata til ën desimal
 		sense_data.append(temp_h_cc)
 
 	if TEMP_P:		#temperatur fra sensor2
 		temp_f = sense.get_temperature_from_pressure()
-		temp_f_c = temp_f - 4 - ((cpu) / 5.466)# formel for korreksjon av temperaturmåler 
+		temp_f_c = temp_f - ((cpu) / 5.466)# formel for korreksjon av temperaturmåler 
 		temp_f_c = round(temp_f_c, 1) #formater utdata til rent desimaltall
 		sense_data.append(temp_f_c)
 
@@ -94,9 +96,7 @@ def get_sense_data(): # selve innskaffelsen av sensor data
 		pressure = round(pressure, 1) #formater utdata til rent desimaltall
 		sense_data.append(pressure)
 
-        
-	sense_data.append(datetime.now().strftime("%Y-%m-%d %H:%M")) # legg til tidspunkt
-	
+	sense_data.append(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) # legg til tidspunkt 
 
 
 
@@ -108,6 +108,41 @@ def timed_log(): #forsinkelse i logg
 		log_data()
 		sleep(DELAY)
 
+################# plotly ######################
+
+username = 'mortenv'
+api_key = '6aOk32PhEvHZsUmDvV16'
+stream_token = 'uan67ed6r7'
+
+py.sign_in(username, api_key)
+
+trace1 = Scatter(
+    x=[],
+    y=[],
+    stream=dict(
+        token=stream_token,
+        maxpoints=200
+    )
+)
+
+layout = Layout(
+    title='Raspberry Pi Streaming Sensor Data'
+)
+
+fig = Figure(data=[trace1], layout=layout)
+
+print py.plot(fig, filename='Raspberry Pi Streaming Example Values')
+
+
+i = 0
+stream = py.Stream(stream_token)
+stream.open()
+
+while True:
+        sensor_data = get_sense_data()
+        stream.write({'x': i, 'y': sensor_data})
+        i += 1
+        time.sleep(1)
 
 
 
@@ -141,6 +176,6 @@ while True:
 	sense.set_rotation(180)        #sett orienteringen til raspberry LED
 	sense.show_message(displaytemp() + "c", scroll_speed=0.06, text_colour=[0, 255, 0]) #innstillinger for LED
 	sense.show_message(displayhumidity() + "%", scroll_speed=0.06, text_colour=[0, 0, 255])#innstillinger for LED
-	#sense.show_message(displaypressure() + "mBar", scroll_speed=0.06, text_colour=[255,0,122])
+	sense.show_message(displaypressure() + "mBar", scroll_speed=0.06, text_colour=[255,0,122])
 	
 	
