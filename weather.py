@@ -3,6 +3,7 @@ from sense_hat import SenseHat
 from time import sleep
 from threading import Thread
 import os
+
 ##### Innstillinger ##### temp_calibrated = temp - ((cpu_temp - temp)/FACTOR)  - temp_calibrated = temp - ((cpu_temp - temp)/5.466)
 
 
@@ -14,7 +15,7 @@ TEMP_H=True
 TEMP_P=True
 HUMIDITY=True
 PRESSURE=False
-DELAY=1800 # hvor mange sekund det skal ta mellom hver loggføring
+DELAY=30 # hvor mange sekund det skal ta mellom hver loggføring
 
 ##### Funksjoner #####
 
