@@ -3,7 +3,7 @@ from sense_hat import SenseHat
 from time import sleep
 from threading import Thread
 import os
-
+#bfadvfadshubogvhu
 ##### Innstillinger ##### temp_calibrated = temp - ((cpu_temp - temp)/FACTOR)  - temp_calibrated = temp - ((cpu_temp - temp)/5.466)
 
 
