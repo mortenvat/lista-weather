@@ -7,7 +7,7 @@ import os
 ##### Innstillinger ##### temp_calibrated = temp - ((cpu_temp - temp)/FACTOR)  - temp_calibrated = temp - ((cpu_temp - temp)/5.466)
 
 
-FILENAME = "testklasserom" ##########################FILNAVN#######################
+FILENAME = "testklasserom.csv" ##########################FILNAVN#######################
 WRITE_FREQUENCY = 1 #hvor mye data den skal samle på før den legger det til i csv filen, høy verdi vil øke levetid på SD kort
 TEMP_H=True
 
@@ -119,7 +119,7 @@ batch_data= []
 if FILENAME == "":		#hvis ingen filnavn er spesifisert, legg til SenseLog+dato i filnavnet
 	filename = "SenseLog-"+str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+".csv" 
 else:					#hvis filnavn er spesifisert, legg til dato inni filnavnet
-	filename = FILENAME+"-"+str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+".csv"
+	filename = FILENAME#"+"-"+str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+".csv"
 
 file_setup(filename)
 
