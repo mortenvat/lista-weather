@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import plotly.plotly as py
 import plotly.graph_objs as go
-
+import weather
 # Import data from csv
 df = pd.read_csv('testklasserom.csv')
 df.head()

@@ -1,0 +1,116 @@
+import subprocess
+import re
+import sys
+import time
+import datetime
+import plotly.plotly as py # plotly library
+from plotly.graph_objs import Scatter, Layout, Figure, Data, Stream, YAxis
+from weather import *
+
+# Plot.ly credentials and stream tokens
+username                 = 'mortenv'
+api_key                  = '9JsB3hmTJM5Gz4zA6rm8'
+stream_token_temperature = 'gr67vx4vfx'
+stream_token_humidity    = 'w6vspsl9zn'
+stream_token_pressure	 = 'rz755wonh9'
+
+py.sign_in(username, api_key)
+
+trace_temperature = Scatter(
+    x=[date()],
+    y=[displaytemp()],
+   stream=Stream(
+        token=stream_token_temperature
+    ),
+    yaxis='y'
+)
+
+trace_humidity = Scatter(
+    x=[date()],
+    y=[displayhumidity()],
+    stream=Stream(
+        token=stream_token_humidity
+    ),
+    yaxis='y2'
+)
+trace_pressure = Scatter(
+    x=[date()],
+    y=[displaypressure()],
+    stream=Stream(
+        token=stream_token_pressure
+    ),
+    yaxis='y3'
+)
+
+layout = Layout(
+    title='Raspberry Pi - Temperature and humidity',
+    yaxis=YAxis(
+        title='Celcius'
+    ),
+    yaxis2=YAxis(
+        title='%',
+        side='right',
+        overlaying="y"
+    )
+	yaxis3=YAxis(
+		title='mBar'
+		side='rigth'
+		overlaying="y"
+)
+
+data = Data([trace_temperature, trace_humidity, trace_pressure])
+fig = Figure(data=data, layout=layout)
+
+print py.plot(fig, filename='Raspberry Pi - Temperature and humidity')
+
+stream_temperature = py.Stream(stream_token_temperature)
+stream_temperature.open()
+
+stream_humidity = py.Stream(stream_token_humidity)
+stream_humidity.open()
+
+stream_pressure = py.Stream(stream_token_pressure)
+stream_pressure.open()
+
+while(True):
+  # # Run the DHT program to get the humidity and temperature readings!
+  # output = subprocess.check_output(["./Adafruit_DHT", "2302", "17"]);
+  # print output
+
+  # # search for temperature printout
+  # matches = re.search("Temp =\s+([0-9.]+)", output)
+  # if (not matches):
+        # time.sleep(3)
+        # continue
+  # temp = float(matches.group(1))
+
+  # # search for humidity printout
+  # matches = re.search("Hum =\s+([0-9.]+)", output)
+  # if (not matches):
+        # time.sleep(3)
+        # continue
+  # humidity = float(matches.group(1))
+  
+  from weather import  displayhumidity
+  print = humidity
+  from weather import displaypressure
+  print = pressure
+  from weather import displaytemp
+  print = temperature
+
+  print "Temperature: %.1f C" % temp
+  print "Humidity:    %.1f %%" % humidity
+  print "pressure:	  %.1f mBar" % pressure
+
+  # Append the data to the streams, including a timestamp
+  now = datetime.datetime.now()
+  stream_temperature.write({'x': now, 'y': temp })
+  stream_humidity.write({'x': now, 'y': humidity })
+  stream_pressure.write({'x': now, 'y': pressure })
+
+  # Wait 30 seconds before continuing
+  time.sleep(30)
+
+stream_temperature.close()
+stream_humidity.close()
+stream_pressure.close()
