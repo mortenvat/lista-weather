@@ -11,13 +11,11 @@ import datetime
 
 FILENAME = "testklasserom.csv" ##########################FILNAVN#######################
 WRITE_FREQUENCY = 1 #hvor mye data den skal samle på før den legger det til i csv filen, høy verdi vil øke levetid på SD kort
-TEMP_H=True
-
-#slå av rapportering av enkelte sensorer?
+TEMP_H=True #slå av rapportering av enkelte sensorer?
 TEMP_P=True
 HUMIDITY=True
 PRESSURE=False
-DELAY=10 # hvor mange sekund det skal ta mellom hver loggføring
+DELAY=60 # hvor mange sekund det skal ta mellom hver loggføring
 
 
 ##### Funksjoner #####
@@ -72,30 +70,30 @@ def get_sense_data(): # selve innskaffelsen av sensor data
 	
 	def getCPUtemperature():
 		res = os.popen('vcgencmd measure_temp').readline()
-		return(res.replace("temp=","").replace("'C\n","")) # gjør utdata til rent desimaltall istedet for tekst 
+		return(res.replace("temp=","").replace("'C\n","")) # gjør utdata til desimaltall istedet for tekst 
 
 	cpu = float(getCPUtemperature()) #gjør info til tall 
 	
 	if TEMP_H:		#temperatur fra sensor1
 		temp_h = sense.get_temperature_from_humidity()
 		temp_h_c = temp_h - 4 - ((cpu) / 5.466)# formel for korreksjon av temperaturmåler 
-		temp_h_cc = round(temp_h_c, 1) #formater utdata til ën desimal
+		temp_h_cc = round(temp_h_c, 1) #formater utdata til én desimal
 		sense_data.append(temp_h_cc)
 
 	if TEMP_P:		#temperatur fra sensor2
 		temp_f = sense.get_temperature_from_pressure()
 		temp_f_c = temp_f - 4 - ((cpu) / 5.466)# formel for korreksjon av temperaturmåler 
-		temp_f_c = round(temp_f_c, 1) #formater utdata til rent desimaltall
+		temp_f_c = round(temp_f_c, 1) #formater utdata til én desimal
 		sense_data.append(temp_f_c)
 
 	if HUMIDITY:	#fuktighetprosent
 		humidity = sense.get_humidity() # skaff info luftfuktighet
-		humidity = round(humidity, 1) #formater utdata til rent desimaltall
+		humidity = round(humidity, 1) #formater utdata til én desimal
 		sense_data.append(humidity) 
 
 	if PRESSURE:	#lufttrykk i mBar
 		pressure = sense.get_pressure() # skaff info lufttrykk
-		pressure = round(pressure, 1) #formater utdata til rent desimaltall
+		pressure = round(pressure, 1) #formater utdata til én desimal
 		sense_data.append(pressure)
 
 	
@@ -107,7 +105,7 @@ def get_sense_data(): # selve innskaffelsen av sensor data
 	return sense_data
 
 
-def timed_log(): #forsinkelse i logg
+def timed_log():
 	while True:
 		log_data()
 		sleep(DELAY)
@@ -118,9 +116,8 @@ def timed_log(): #forsinkelse i logg
 import plotly.plotly as py
 import plotly.tools as tls
 import plotly.graph_objs as go
-import numpy as np 
 stream_tokens = tls.get_credentials_file()['stream_ids']
-token_1 = stream_tokens[-1]   # I'm getting my stream tokens from the end to ensure I'm not reusing tokens
+token_1 = stream_tokens[-1]   
 token_2 = stream_tokens[-2]
 token_3 = stream_tokens[-3]
 print (token_1)
@@ -130,14 +127,13 @@ stream_id1 = dict(token=token_1, maxpoints=60)
 stream_id2 = dict(token=token_2, maxpoints=60)
 stream_id3 = dict(token=token_3, maxpoints=60)
 
-
 trace1 = go.Scatter(x=[], y=[], stream=stream_id1, name='temp')
 trace2 = go.Scatter(x=[], y=[], stream=stream_id2, name='fuktighet', mode = 'lines+markers', marker=dict(color='rgb(148, 103, 189)'))
 trace3 = go.Scatter(x=[], y=[], stream=stream_id3, yaxis='y2', name='trykk', mode = 'lines+markers', marker=dict(color='rgb(255, 0, 0'))
 
 data = [trace1, trace2, trace3]
 layout = go.Layout(
-    title='weather station',
+    title='værstasjon',
     yaxis=dict(
 	title='celsius'
     ),
@@ -156,7 +152,7 @@ layout = go.Layout(
 )
 
 fig = go.Figure(data=data, layout=layout)
-plot_url = py.plot(fig, filename='multple-trace-axes-streaming')
+plot_url = py.plot(fig, filename='værstasjon')
 s_1 = py.Stream(stream_id=token_1)
 s_2 = py.Stream(stream_id=token_2)
 s_3 = py.Stream(stream_id=token_3)
@@ -165,7 +161,7 @@ s_2.open()
 s_3.open()	
 
 
-def show():
+def show(): #bruk raspberry LED display
 	while True:
 		sense.set_rotation(180) #sett orienteringen til raspberry LED
 		sense.show_message(displaytemp() + "c", scroll_speed=0.06, text_colour=[0, 255, 0]) #innstillinger for LED
@@ -175,23 +171,22 @@ def show():
 		continue
 	
 		
-def plotlywrite():
+def plotlywrite(): #skriv til plot.ly url 
 	while True:
 		tid = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
-		y1 = displaytemp()
-		y2 = displayhumidity()
-		y3 = displaypressure()
-		print(y1,y2,y3)
-		s_1.write(dict(x=tid,y=y1))
-		s_2.write(dict(x=tid,y=y2))
-		s_3.write(dict(x=tid,y=y3))
-		print("plotly", y1, y2, y3, tid)
-		sleep(10)
+		temperatur = displaytemp()
+		luftfuktighet = displayhumidity()
+		lufttrykk = displaypressure()
+		s_1.write(dict(x=tid,y=temperatur))
+		s_2.write(dict(x=tid,y=luftfuktighet))
+		s_3.write(dict(x=tid,y=lufttrykk))
+		print(temperatur,luftfuktighet,lufttrykk)
+		sleep(61)
 		
 
 
-Thread(target= show).start()
-Thread(target= plotlywrite).start()
+Thread(target= show).start()  #start raspberry led
+Thread(target= plotlywrite).start() # start skriving til plotly
 sense = SenseHat()
 batch_data= []
 
@@ -200,7 +195,7 @@ if FILENAME == "":		#hvis ingen filnavn er spesifisert, legg til SenseLog+dato i
 	file_setup(filename)
 else:
 
-	filename = FILENAME#+"-"+str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+".csv"		#hvis filnavn er spesifisert, legg til dato inni filnavnet
+	filename = FILENAME+"-"+str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+".csv"		#hvis filnavn er spesifisert, legg til dato inni filnavnet
 	file_setup(filename)
 if DELAY > 0:
 	sense_data = get_sense_data()
@@ -216,7 +211,3 @@ while True:
 			for line in batch_data:
 				f.write(line + "\n")
 			batch_data = []
-
-
-
-
