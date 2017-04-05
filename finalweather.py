@@ -3,6 +3,8 @@ from sense_hat import SenseHat
 from time import sleep
 from threading import Thread
 import os
+import time
+import datetime
 #bfadvfadshubogvhu
 ##### Innstillinger ##### temp_calibrated = temp - ((cpu_temp - temp)/FACTOR)  - temp_calibrated = temp - ((cpu_temp - temp)/5.466)
 
@@ -15,7 +17,7 @@ TEMP_H=True
 TEMP_P=True
 HUMIDITY=True
 PRESSURE=False
-DELAY=30 # hvor mange sekund det skal ta mellom hver loggføring
+DELAY=10 # hvor mange sekund det skal ta mellom hver loggføring
 
 
 ##### Funksjoner #####
@@ -96,8 +98,8 @@ def get_sense_data(): # selve innskaffelsen av sensor data
 		pressure = round(pressure, 1) #formater utdata til rent desimaltall
 		sense_data.append(pressure)
 
-        
-	sense_data.append(datetime.now().strftime("%Y-%m-%d %H:%M")) # legg til tidspunkt
+	
+	sense_data.append(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")) # legg til tidspunkt
 	
 
 
@@ -137,18 +139,18 @@ data = [trace1, trace2, trace3]
 layout = go.Layout(
     title='weather station',
     yaxis=dict(
-        title='celsius'
+	title='celsius'
     ),
     yaxis2=dict(
-        title='%',
-        titlefont=dict(
-            color='rgb(148, 103, 189)'
-        ),
-        tickfont=dict(
-            color='rgb(148, 103, 189)'
-        ),
-        overlaying='y',
-        side='right'
+	title='%',
+	titlefont=dict(
+	    color='rgb(148, 103, 189)'
+	),
+	tickfont=dict(
+	    color='rgb(148, 103, 189)'
+	),
+	overlaying='y',
+	side='right'
 		
 		),
 )
@@ -161,59 +163,59 @@ s_3 = py.Stream(stream_id=token_3)
 s_1.open()
 s_2.open()
 s_3.open()	
-sense = SenseHat()
-batch_data= []
-class message(Thread):
-	Thread.show(self)
-	self.daemon = True 
-	self.start()
-	def show(self):
-		sense.set_rotation(180)        #sett orienteringen til raspberry LED
+
+
+def show():
+	while True:
+		sense.set_rotation(180) #sett orienteringen til raspberry LED
 		sense.show_message(displaytemp() + "c", scroll_speed=0.06, text_colour=[0, 255, 0]) #innstillinger for LED
 		sense.show_message(displayhumidity() + "%", scroll_speed=0.06, text_colour=[0, 0, 255])#innstillinger for LED
 		#sense.show_message(displaypressure() + "mBar", scroll_speed=0.06, text_colour=[255,0,122])
-while True:
-	if DELAY == 0:
-		tid = datetime.now().strftime('%Y-%m-%d %H:%M')
+		sleep(10)
+		continue
+	
+		
+def plotlywrite():
+	while True:
+		tid = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 		y1 = displaytemp()
 		y2 = displayhumidity()
 		y3 = displaypressure()
-		print (y1,y2,y3)
+		print(y1,y2,y3)
 		s_1.write(dict(x=tid,y=y1))
 		s_2.write(dict(x=tid,y=y2))
 		s_3.write(dict(x=tid,y=y3))
-	
-	#######plotly#########
-	##### Programm #####
-
-	if FILENAME == "":		#hvis ingen filnavn er spesifisert, legg til SenseLog+dato i filnavnet
-		filename = "SenseLog-"+str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+".csv" 
-		file_setup(filename)
-		else
-			filename = FILENAME#+"-"+str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+".csv"		#hvis filnavn er spesifisert, legg til dato inni filnavnet
-			file_setup(filename)
+		print("plotly", y1, y2, y3, tid)
+		sleep(10)
+		
 
 
-	
+Thread(target= show).start()
+Thread(target= plotlywrite).start()
+sense = SenseHat()
+batch_data= []
 
-	elif DELAY > 0:
-		sense_data = get_sense_data()
-		Thread(target= timed_log).start()
+if FILENAME == "":		#hvis ingen filnavn er spesifisert, legg til SenseLog+dato i filnavnet
+	filename = "SenseLog-"+str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+".csv" 
+	file_setup(filename)
+else:
 
-
+	filename = FILENAME#+"-"+str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))+".csv"		#hvis filnavn er spesifisert, legg til dato inni filnavnet
+	file_setup(filename)
+if DELAY > 0:
 	sense_data = get_sense_data()
-	elif DELAY == 0:
+	Thread(target= timed_log).start()
+while True:
+	sense_data = get_sense_data()
+	if DELAY == 0:
 		log_data()
-	elif len(batch_data) >= WRITE_FREQUENCY:
+
+	if len(batch_data) >= WRITE_FREQUENCY:
 		print("Writing to file..")
 		with open(filename,"a") as f:
 			for line in batch_data:
 				f.write(line + "\n")
 			batch_data = []
-
-
-	message()
-	continue
 
 
 
