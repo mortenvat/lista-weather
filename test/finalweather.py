@@ -15,7 +15,7 @@ TEMP_H=True #slå av rapportering av enkelte sensorer?
 TEMP_P=True
 HUMIDITY=True
 PRESSURE=False
-DELAY=60 # hvor mange sekund det skal ta mellom hver loggføring
+DELAY=1800 # hvor mange sekund det skal ta mellom hver loggføring, husk å endre i def plotlywrite() > sleep(XXX)
 
 
 ##### Funksjoner #####
@@ -127,9 +127,9 @@ stream_id1 = dict(token=token_1, maxpoints=60)
 stream_id2 = dict(token=token_2, maxpoints=60)
 stream_id3 = dict(token=token_3, maxpoints=60)
 
-trace1 = go.Scatter(x=[], y=[], stream=stream_id1, name='temp')
-trace2 = go.Scatter(x=[], y=[], stream=stream_id2, name='fuktighet', mode = 'lines+markers', marker=dict(color='rgb(148, 103, 189)'))
-trace3 = go.Scatter(x=[], y=[], stream=stream_id3, yaxis='y2', name='trykk', mode = 'lines+markers', marker=dict(color='rgb(255, 0, 0'))
+trace1 = go.Scatter(x=[], y=[], stream=stream_id1, name='temp', mode = 'lines+markers', 'temperature)
+trace2 = go.Scatter(x=[], y=[], stream=stream_id2, name='fuktighet', mode = 'lines+markers', 'fuktighet', marker=dict(color='rgb(148, 103, 189)'))
+trace3 = go.Scatter(x=[], y=[], stream=stream_id3, yaxis='y2', name='trykk', 'trykk'. mode = 'lines+markers', marker=dict(color='rgb(255, 0, 0'))
 
 data = [trace1, trace2, trace3]
 layout = go.Layout(
@@ -181,7 +181,7 @@ def plotlywrite(): #skriv til plot.ly url
 		s_2.write(dict(x=tid,y=luftfuktighet))
 		s_3.write(dict(x=tid,y=lufttrykk))
 		print(temperatur,luftfuktighet,lufttrykk)
-		sleep(61)
+		sleep(1800)
 		
 
 
