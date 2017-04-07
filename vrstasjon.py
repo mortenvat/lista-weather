@@ -10,12 +10,12 @@ import datetime
 
 
 FILENAME = "testklasserom.csv" ##########################FILNAVN#######################
-WRITE_FREQUENCY = 1 #hvor mye data den skal samle på før den legger det til i csv filen, høy verdi vil øke levetid på SD kort
-TEMP_H=True #slå av rapportering av enkelte sensorer?
+WRITE_FREQUENCY = 1 #hvor mye data den skal samle p fr den legger det til i csv filen, hy verdi vil ke levetid p SD kort
+TEMP_H=True #sl av rapportering av enkelte sensorer?
 TEMP_P=True
 HUMIDITY=True
 PRESSURE=False
-DELAY=50 # hvor mange sekund det skal ta mellom hver loggføring, husk å endre i "def plotlywrite() > sleep(XXX)"
+DELAY=50 # hvor mange sekund det skal ta mellom hver loggfring, husk  endre i "def plotlywrite() > sleep(XXX)"
 
 
 ##### Funksjoner #####
@@ -43,7 +43,7 @@ def log_data():
 def displaytemp(): #vis temperatur i LED
 	cpu = float(getCPUtemperature())
 	temp_h = sense.get_temperature_from_pressure()
-	temp_h_c = temp_h - 3.5 - ((cpu) / 5.466)  # formel for korreksjon av temperaturmåler 
+	temp_h_c = temp_h - 3.5 - ((cpu) / 5.466)  # formel for korreksjon av temperaturmler 
 	temp_h_cc = round(temp_h_c, 1)  #formater utdata til ën desimal
 	return str(temp_h_cc)
 	
@@ -70,19 +70,19 @@ def get_sense_data(): # selve innskaffelsen av sensor data
 	
 	def getCPUtemperature():
 		res = os.popen('vcgencmd measure_temp').readline()
-		return(res.replace("temp=","").replace("'C\n","")) # gjør utdata til desimaltall istedet for tekst 
+		return(res.replace("temp=","").replace("'C\n","")) # gjr utdata til desimaltall istedet for tekst 
 
-	cpu = float(getCPUtemperature()) #gjør info til tall 
+	cpu = float(getCPUtemperature()) #gjr info til tall 
 	
 	if TEMP_H:		#temperatur fra sensor1
 		temp_h = sense.get_temperature_from_humidity()
-		temp_h_c = temp_h - 2 - ((cpu) / 5.466)# formel for korreksjon av temperaturmåler 
+		temp_h_c = temp_h - 2 - ((cpu) / 5.466)# formel for korreksjon av temperaturmler 
 		temp_h_cc = round(temp_h_c, 1) #formater utdata til én desimal
 		sense_data.append(temp_h_cc)
 
 	if TEMP_P:		#temperatur fra sensor2
 		temp_f = sense.get_temperature_from_pressure()
-		temp_f_c = temp_f - 3.5 - ((cpu) / 5.466)# formel for korreksjon av temperaturmåler 
+		temp_f_c = temp_f - 3.5 - ((cpu) / 5.466)# formel for korreksjon av temperaturmler 
 		temp_f_c = round(temp_f_c, 1) #formater utdata til én desimal
 		sense_data.append(temp_f_c)
 
@@ -135,7 +135,7 @@ trace3 = go.Scatter(x=[], y=[], stream=stream_id3, yaxis='y2', name='trykk', mod
 
 data = [trace1, trace2, trace3]
 layout = go.Layout(
-    title='værstasjon',
+    title='vrstasjon',
     yaxis=dict(
 	title='celsius' + ' og' + ' %' + ' luftfuktighet'
     ),
@@ -154,7 +154,7 @@ layout = go.Layout(
 )
 
 fig = go.Figure(data=data, layout=layout)
-plot_url = py.plot(fig, filename='værstasjon')
+plot_url = py.plot(fig, filename='vrstasjon')
 s_1 = py.Stream(stream_id=token_1)
 s_2 = py.Stream(stream_id=token_2)
 s_3 = py.Stream(stream_id=token_3)
